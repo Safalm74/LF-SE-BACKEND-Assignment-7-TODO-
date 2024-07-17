@@ -46,10 +46,10 @@ export function readRemainingTasks(
 ) {
   logger.info("Request: Read Task");
 
-  const user_id = req.user!.id;
-  const data = TaskhandlerService.readRemainingTasks(user_id);
+  // const user_id = req.user!.id;
+  // const data = TaskhandlerService.readRemainingTasks(user_id);
 
-  res.status(HttpStatusCode.OK).json(data);
+  // res.status(HttpStatusCode.OK).json(data);
 }
 
 //controller function to readtask
@@ -60,10 +60,10 @@ export function readFinishedTasks(
 ) {
   logger.info("Request: Read Task");
 
-  const user_id = req.user!.id;
-  const data = TaskhandlerService.readFinishedTasks(user_id);
+  // const user_id = req.user!.id;
+  // const data = TaskhandlerService.readFinishedTasks(user_id);
 
-  res.status(HttpStatusCode.OK).json(data);
+  // res.status(HttpStatusCode.OK).json(data);
 }
 
 //controller function to update task
