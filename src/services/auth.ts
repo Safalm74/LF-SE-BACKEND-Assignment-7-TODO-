@@ -5,9 +5,6 @@ import { getUserByEmail } from "./user";
 import bcrypt from "bcrypt";
 import { sign, verify } from "jsonwebtoken";
 import loggerWithNameSpace from "../utils/logger";
-import * as AuthModel from "../models/auth";
-import { NotFoundError } from "../error/NotFoundError";
-import { BadRequestError } from "../error/BadRequestError";
 
 const logger = loggerWithNameSpace("Auth Service");
 
@@ -65,9 +62,6 @@ export async function login(
   const refreshToken = await sign(payload, config.jwt.jwt_secret!, {
     expiresIn: config.jwt.refrehTokenExpiryS,
   });
-
-  //saving refresh token
-  AuthModel.createRefreshToken(existingUser.id, refreshToken);
 
   //returning access and refresh token
   return {

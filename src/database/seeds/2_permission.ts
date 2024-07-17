@@ -12,7 +12,6 @@ export async function seed(knex: Knex): Promise<void> {
   await knex.raw(`TRUNCATE TABLE ${TABLE_NAME} RESTART IDENTITY CASCADE`);
 
   return knex(TABLE_NAME)
-    .del()
     .then(() => {
       return knex(TABLE_NAME).insert([
         {

@@ -1,5 +1,8 @@
 import { ITask } from "../interface/task";
 import BaseModel from "./base";
+
+const TABLE_NAME='tasks'
+
 export class TaskModel extends BaseModel {
   static async create(task: ITask, user_id: string) {
     const taskToCreate = {
@@ -8,7 +11,7 @@ export class TaskModel extends BaseModel {
       user_id: user_id,
       created_by:user_id
     };
-    await this.queryBuilder().insert(taskToCreate).table("tasks");
+    await this.queryBuilder().insert(taskToCreate).table(TABLE_NAME);
     return task;
   }
 
@@ -23,6 +26,7 @@ export class TaskModel extends BaseModel {
 
     return query;
   }
+  
   static async update(task_id: string, task: ITask, user_id: string) {
     const taskToCreate = {
       name: task.name,
@@ -33,7 +37,7 @@ export class TaskModel extends BaseModel {
 
     const query = this.queryBuilder()
       .update(taskToCreate)
-      .table("tasks")
+      .table(TABLE_NAME)
       .where({ id: task_id, user_id: user_id });
 
     await query;
@@ -42,49 +46,12 @@ export class TaskModel extends BaseModel {
   static async delete(user_id: string, TaskToDeleteId?: string) {
     const query = this.queryBuilder()
       .delete()
-      .table("tasks")
+      .table(TABLE_NAME)
       .where({ user_id: user_id });
     if (TaskToDeleteId) {
       query.where({ id: TaskToDeleteId });
     }
     await query;
   }
-
-  // static get(filter:IGetUserQuery){
-  //   const {q:id,page,size}=filter;
-  //   const query=this.queryBuilder().select('id','email','name').table("users").limit(size!).offset((page! - 1) * size!);
-  //   if (id){
-  //     query.where({id});
-  //   }
-  //   // const data=await query;
-  //   // const count =await
-  //   // const meta={
-  //   //   size:data.length
-  //   // }
-  //   return query;
-  // }
-
-  // static getUserByEmail(email:string){
-  //   const query=this.queryBuilder().select('id','email','name','password','role_id').table("users").where({email:email})
-  //   return query;
-  // }
-
-  // static async update(id:string,user:IUser){
-  //   const userToUpdate={
-  //     name:user.name,
-  //     email:user.email,
-  //     password:user.password,
-  //     updated_at:new Date()
-  //   }
-
-  //   const query =this.queryBuilder().update(userToUpdate).table("users").where({id});
-
-  //   console.log(await query)
-
-  //   await query;
-  // }
-
-  // static delete(UserToDeleteId:string){
-  // }
 }
 

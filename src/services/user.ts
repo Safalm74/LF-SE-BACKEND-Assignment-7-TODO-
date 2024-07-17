@@ -5,8 +5,6 @@ import { NotFoundError } from "../error/NotFoundError";
 import loggerWithNameSpace from "../utils/logger";
 import { BadRequestError } from "../error/BadRequestError";
 import { deleteAllTaskByUserId } from "./task";
-import { func } from "joi";
-import knex, { Knex } from "knex";
 
 const logger = loggerWithNameSpace("User Service");
 

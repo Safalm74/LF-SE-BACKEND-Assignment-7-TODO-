@@ -1,6 +1,8 @@
 import { IGetUserQuery, IUser } from "../interface/user";
 import BaseModel from "./base";
 
+const TABLE_NAME="users";
+
 export class UserModel extends BaseModel{
   static async create(user:IUser,createdById:string){
     const userToCreate={
@@ -10,26 +12,23 @@ export class UserModel extends BaseModel{
       role_id:user.role_id,
       created_by:createdById
     }
-    await this.queryBuilder().insert(userToCreate).table('users')
+    await this.queryBuilder().insert(userToCreate).table(TABLE_NAME)
     return user;
   }
 
   static get(filter:IGetUserQuery){
     const {q:id,page,size}=filter;
-    const query=this.queryBuilder().select('id','email','name').table("users").limit(size!).offset((page! - 1) * size!);
+    const query=this.queryBuilder().select('id','email','name').table(TABLE_NAME).limit(size!).offset((page! - 1) * size!);
+
     if (id){
       query.where({id});
     }
-    // const data=await query;
-    // const count =await 
-    // const meta={
-    //   size:data.length
-    // }
+
     return query;
   }
 
   static getUserByEmail(email:string){
-    const query=this.queryBuilder().select('id','email','name','password','role_id').table("users").where({email:email})
+    const query=this.queryBuilder().select('id','email','name','password','role_id').table(TABLE_NAME).where({email:email})
     return query;
   }
 
@@ -41,7 +40,7 @@ export class UserModel extends BaseModel{
       updated_at:new Date()
     }
 
-    const query =this.queryBuilder().update(userToUpdate).table("users").where({id});
+    const query =this.queryBuilder().update(userToUpdate).table(TABLE_NAME).where({id});
  
     await query;
 
@@ -49,7 +48,7 @@ export class UserModel extends BaseModel{
   }
 
   static async delete(UserToDeleteId:string){
-    const query=this.queryBuilder().delete().table("users").where({id:UserToDeleteId});
+    const query=this.queryBuilder().delete().table(TABLE_NAME).where({id:UserToDeleteId});
 
     await query;
     

@@ -3,7 +3,6 @@ import Sinon from "sinon";
 import * as UserService from "../../../services/user";
 import { IUser } from "../../../interface/user";
 import bcrypt from "bcrypt";
-import * as AuthModel from "../../../models/auth";
 import * as AuthService from "../../../services/auth";
 import JWT from "jsonwebtoken";
 import { UnaunthicatedError } from "../../../error/UnauthenticatedError";
@@ -22,10 +21,6 @@ describe("Auth Service Test Suite", () => {
       bcryptCompareStub = Sinon.stub(bcrypt, "compare");
       JWTSignStub = Sinon.stub(JWT, "sign");
       JWTVerifyStub = Sinon.stub(JWT, "verify");
-      AuthModelcreateRefreshTokenStub = Sinon.stub(
-        AuthModel,
-        "createRefreshToken"
-      );
     });
 
     afterEach(() => {
@@ -33,7 +28,6 @@ describe("Auth Service Test Suite", () => {
       bcryptCompareStub.restore();
       JWTSignStub.restore();
       JWTVerifyStub.restore();
-      AuthModelcreateRefreshTokenStub.restore();
     });
 
     it("Should throw UnaunthicatedError if user doesnot exist", async () => {
@@ -93,22 +87,12 @@ describe("Auth Service Test Suite", () => {
     let bcryptCompareStub: Sinon.SinonStub;
     let JWTSignStub: Sinon.SinonStub;
     let JWTVerifyStub: Sinon.SinonStub;
-    let AuthModelcreateRefreshTokenStub: Sinon.SinonStub;
-    let AuthModelGetRefreshTokenByIdStub: Sinon.SinonStub;
 
     beforeEach(() => {
       UserServiceGetUserByEmailStub = Sinon.stub(UserService, "getUserByEmail");
       bcryptCompareStub = Sinon.stub(bcrypt, "compare");
       JWTSignStub = Sinon.stub(JWT, "sign");
       JWTVerifyStub = Sinon.stub(JWT, "verify");
-      AuthModelcreateRefreshTokenStub = Sinon.stub(
-        AuthModel,
-        "createRefreshToken"
-      );
-      AuthModelGetRefreshTokenByIdStub = Sinon.stub(
-        AuthModel,
-        "getTokenByUserId"
-      );
     });
 
     afterEach(() => {
@@ -116,8 +100,6 @@ describe("Auth Service Test Suite", () => {
       bcryptCompareStub.restore();
       JWTSignStub.restore();
       JWTVerifyStub.restore();
-      AuthModelcreateRefreshTokenStub.restore();
-      AuthModelGetRefreshTokenByIdStub.restore();
     });
 
     it("should return UnaunthicatedError", async () => {
@@ -139,7 +121,6 @@ describe("Auth Service Test Suite", () => {
 
       JWTVerifyStub.resolves(decoded);
       JWTSignStub.resolves("<Token>");
-      AuthModelGetRefreshTokenByIdStub.returns({token:"<Token>"});
 
       await expect(AuthService.refreshAccessToken(token)).resolves.toStrictEqual({ accessToken: "<Token>" });
     });
