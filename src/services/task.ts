@@ -30,19 +30,6 @@ export function readTasks(user_id: string) {
   return TaskHandlerModel.TaskModel.get(user_id);
 }
 
-//service to handle read task
-// export function readRemainingTasks(user_id: string) {
-//   const readData = TaskHandlerModel.readRemainingTasks(user_id);
-
-//   return readData;
-// }
-// //service to handle read task
-// export function readFinishedTasks(user_id: string) {
-//   const readData = TaskHandlerModel.readFinishedTasks(user_id);
-
-//   return readData;
-// }
-
 //service to handle update task
 export async function updatedTask(
   id: string,
@@ -59,10 +46,10 @@ export async function updatedTask(
   if (!data) {
     throw new NotFoundError("Task not found");
   }
-
+  
   //getting task by name
   const existingTask = (await TaskHandlerModel.TaskModel.get(user_id)).map(
-    ({ name: task }) => task
+    ({ name: task }) => task !== data.name?task:""
   );
 
   //to prevent to create repeated task
@@ -72,7 +59,9 @@ export async function updatedTask(
     throw new BadRequestError("Task already exists for the user");
   }
 
-  return TaskHandlerModel.TaskModel.update(id, updatedTask, user_id);
+  TaskHandlerModel.TaskModel.update(id, updatedTask, user_id);
+
+  return ` task updated: from (${data.name}) to (${updatedTask.name})`
 }
 
 //service to handle delete task
@@ -87,7 +76,9 @@ export async function deleteTask(taskId: string, user_id: string) {
     throw new NotFoundError("Task not found");
   }
 
-  return TaskHandlerModel.TaskModel.delete(user_id, taskId);
+  await TaskHandlerModel.TaskModel.delete(user_id, taskId);
+
+  return ` task deleted: ${data.name}`
 }
 
 //service to handle delete task

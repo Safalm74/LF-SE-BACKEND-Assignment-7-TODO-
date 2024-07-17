@@ -7,13 +7,14 @@ import { NotFoundError } from "../../../error/NotFoundError";
 import { IUser } from "../../../interface/user";
 import bcrypt from "bcrypt";
 import { BadRequestError } from "../../../error/BadRequestError";
+import { rejects } from "assert";
 
 describe("User Service Test Suite", () => {
   describe("getUserById: ", () => {
     let getUserByIdStub: Sinon.SinonStub;
 
     beforeEach(() => {
-      getUserByIdStub=Sinon.stub(UserModel, "getUserById")
+      getUserByIdStub=Sinon.stub(UserModel.UserModel, "get")
     });
 
     afterEach(() => {
@@ -21,38 +22,28 @@ describe("User Service Test Suite", () => {
     });
 
     it("Should throw error", () => {
-      getUserByIdStub.returns(undefined);
+      getUserByIdStub.resolves(undefined);
 
       expect(() => {
         return UserService.getUserById("1000");
-      }).toThrow(new NotFoundError("user not found"));
+      }).rejects.toThrow(new NotFoundError("user not found"));
     });
 
-    it("Should return user if user found", () => {
+    it("Should return user if user found", async() => {
       const user: IUser = {
         id: "1",
         name: "admin",
         email: "admin@admin.com",
         password:
           "$2b$10$8bnVy6XkAPndk9.XZEv2qOHHpiqLKfQJVVMFkkrb0Ef96hj09qjli",
-        permissions: [
-          "user.post",
-          "user.get",
-          "user.put",
-          "user.delete",
-          "task.post",
-          "task.put",
-          "task.delete",
-          "task.get",
-        ],
-        role: "user",
+        role_id: 2,
       };
 
-      getUserByIdStub.returns(user);
+      getUserByIdStub.returns(Promise.resolve([user]))
 
-      const response = UserService.getUserById("1");
+      const response = await UserService.getUserById("1");
 
-      expect(response).toStrictEqual(user);
+      expect(response).toStrictEqual([user]);
     });
   });
 
@@ -63,8 +54,8 @@ describe("User Service Test Suite", () => {
 
     beforeEach(() => {
       bcryptHashStub = Sinon.stub(bcrypt, "hash");
-      userModelCreateUserStub = Sinon.stub(UserModel, "createUser");
-      getUserByEmailStub = Sinon.stub(UserModel, "getUserByEmail");
+      userModelCreateUserStub = Sinon.stub(UserModel.UserModel, "create");
+      getUserByEmailStub = Sinon.stub(UserModel.UserModel, "getUserByEmail");
     });
 
     afterEach(() => {
@@ -79,14 +70,13 @@ describe("User Service Test Suite", () => {
         name: "test",
         email: "test@test.com",
         password: "test password",
-        role: "super_user",
-        permissions: [],
+        role_id: 1,
       };
 
       bcryptHashStub.resolves("HashedPassword");
       getUserByEmailStub.returns(user);
 
-      await expect(UserService.createUser(user)).rejects.toThrow(
+      await expect(UserService.createUser(user,'1')).rejects.toThrow(
         new BadRequestError("Email is already used")
       );
     });
@@ -97,20 +87,19 @@ describe("User Service Test Suite", () => {
         name: "test",
         email: "test@test.com",
         password: "test password",
-        role: "super_user",
-        permissions: [],
+        role_id: 1,
       };
 
-      getUserByEmailStub.returns(undefined);
+      getUserByEmailStub.returns([]);
       bcryptHashStub.resolves("HashedPassword");
 
-      await UserService.createUser(user);
+      await UserService.createUser(user,'1');
 
       expect(bcryptHashStub.callCount).toBe(1);
       expect(bcryptHashStub.getCall(0).args).toStrictEqual([user.password, 10]);
       expect(userModelCreateUserStub.callCount).toBe(1);
       expect(userModelCreateUserStub.getCall(0).args).toStrictEqual([
-        { ...user, password: "HashedPassword" },
+        { ...user, password: "HashedPassword" },"1"
       ]);
     });
   });
@@ -122,10 +111,10 @@ describe("User Service Test Suite", () => {
     let userModelUpdateUserStub: Sinon.SinonStub;
 
     beforeEach(() => {
-      getUserByEmailStub = Sinon.stub(UserModel, "getUserByEmail");
-      getUserByIdStub = Sinon.stub(UserModel, "getUserById");
+      getUserByEmailStub = Sinon.stub(UserModel.UserModel, "getUserByEmail");
+      getUserByIdStub = Sinon.stub(UserModel.UserModel, "get");
       bcryptHashStub = Sinon.stub(bcrypt, "hash");
-      userModelUpdateUserStub = Sinon.stub(UserModel, "updateUser");
+      userModelUpdateUserStub = Sinon.stub(UserModel.UserModel, "update");
     });
 
     afterEach(() => {
@@ -135,12 +124,11 @@ describe("User Service Test Suite", () => {
       userModelUpdateUserStub.restore();
     });
 
-    it("Should throw error if user not found", () => {
-      getUserByIdStub.returns(undefined);
+    it("Should throw error if user not found", async() => {
       
-      expect(() => {
-        return UserService.getUserById("1000");
-      }).toThrow(new NotFoundError("user not found"));
+      getUserByIdStub.returns(Promise.resolve([]));
+      
+      await expect( UserService.getUserById("1000")).rejects.toThrow(new NotFoundError("User not found"))
     });
 
     it("Should throw error if email exists", async () => {
@@ -149,14 +137,12 @@ describe("User Service Test Suite", () => {
         name: "test",
         email: "test@test.com",
         password: "test password",
-        role: "super_user",
-        permissions: [],
+        role_id:1
       };
 
       bcryptHashStub.resolves("HashedPassword");
       getUserByEmailStub.returns({ ...user, email: "test2@test.com" });
-      getUserByIdStub.returns(user);
-      userModelUpdateUserStub.resolves();
+      getUserByIdStub.returns(Promise.resolve([user]));
 
       await expect(
         UserService.updateUser("1", { ...user, email: "test2@test.com" })
@@ -169,12 +155,11 @@ describe("User Service Test Suite", () => {
         name: "test",
         email: "test@test.com",
         password: "test password",
-        role: "super_user",
-        permissions: [],
+        role_id:1
       };
 
-      getUserByEmailStub.returns(undefined);
-      getUserByIdStub.returns(user);
+      getUserByEmailStub.returns(Promise.resolve([user]))
+      getUserByIdStub.returns(Promise.resolve([user]));
       bcryptHashStub.resolves("HashedPassword");
 
       await UserService.updateUser("1", {...user,password:"new password"});
@@ -195,8 +180,8 @@ describe("User Service Test Suite", () => {
     let deleteAllTaskByUserId:Sinon.SinonStub;
 
     beforeEach(()=>{
-      getUserByIdStub=Sinon.stub(UserModel, "getUserById");
-      userModelDeleteUserStub=Sinon.stub(UserModel, "deleteUser");
+      getUserByIdStub=Sinon.stub(UserModel.UserModel, "get");
+      userModelDeleteUserStub=Sinon.stub(UserModel.UserModel, "delete");
       deleteAllTaskByUserId=Sinon.stub(TaskService, "deleteAllTaskByUserId");
     });
 
@@ -207,29 +192,28 @@ describe("User Service Test Suite", () => {
       deleteAllTaskByUserId.restore();
       });
 
-    it("should throw error if user not found",()=>{
-      getUserByIdStub.returns(undefined);
+    it("should throw error if user not found",async ()=>{
+      getUserByIdStub.returns(Promise.resolve([]));
 
-      expect(() => {
-        return UserService.deleteUser("1000");
-      }).toThrow(new NotFoundError("user not found"));
+      await expect( UserService.deleteUser("1000")).rejects.toThrow(new NotFoundError("user not found"))
     });
 
-    it("should delete user",()=>{
+    it("should delete user",async()=>{
       const user: IUser = {
         id: "1",
         name: "test",
         email: "test@test.com",
         password: "test password",
-        role: "super_user",
-        permissions: [],
+        role_id:1
       };
 
       getUserByIdStub.returns(user);
       deleteAllTaskByUserId.returns(undefined);
-      userModelDeleteUserStub.returns(`user deleted: ${user.id}`);
+      userModelDeleteUserStub.resolves({});
 
-      expect(UserService.deleteUser(user.id)).toBe(`user deleted: ${user.id}`);
+      const message=await UserService.deleteUser(user.id);
+
+      expect(message).toStrictEqual({msg: "User Deleted: 1"});
     });
   });
 });

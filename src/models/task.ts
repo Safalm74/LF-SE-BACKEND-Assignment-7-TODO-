@@ -13,13 +13,9 @@ export class TaskModel extends BaseModel {
   }
 
   static async get(id?: string) {
-    const size = 20;
-    const page = 1;
     const query = this.queryBuilder()
       .select("id", "name", "is_finished")
       .table("tasks")
-      .limit(size!)
-      .offset((page! - 1) * size!);
 
     if (id) {
       query.where({ user_id: id });

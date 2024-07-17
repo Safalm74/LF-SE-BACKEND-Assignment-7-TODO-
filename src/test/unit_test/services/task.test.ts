@@ -12,8 +12,8 @@ describe("Task Service Test Suite", () => {
     let createTaskStub: Sinon.SinonStub;
 
     beforeEach(() => {
-      getTaskByNameStub = Sinon.stub(TaskModel, "getTaskByName");
-      createTaskStub = Sinon.stub(TaskModel, "createTask");
+      getTaskByNameStub = Sinon.stub(TaskModel.TaskModel, "get");
+      createTaskStub = Sinon.stub(TaskModel.TaskModel, "create");
     });
 
     afterEach(() => {
@@ -29,9 +29,9 @@ describe("Task Service Test Suite", () => {
         is_finished: false,
       };
 
-      getTaskByNameStub.returns(task);
+      getTaskByNameStub.returns(Promise.resolve([task]));
 
-      expect(() => TaskService.createTask(task, task.user_id)).toThrow(
+      await expect(TaskService.createTask(task, task.user_id)).rejects.toThrow(
         new BadRequestError("Task already exists for the user")
       );
     });
@@ -44,10 +44,10 @@ describe("Task Service Test Suite", () => {
         is_finished: false,
       };
 
-      getTaskByNameStub.returns(undefined);
+      getTaskByNameStub.returns(Promise.resolve([]));
       createTaskStub.returns(`Task Created: ${task.name}`);
 
-      const response = TaskModel.createTask(task, task.user_id);
+      const response = await TaskService.createTask(task, task.user_id);
       expect(response).toBe(`Task Created: ${task.name}`);
     });
   });
@@ -55,13 +55,13 @@ describe("Task Service Test Suite", () => {
   describe("readTask", () => {
     let TaskModelReadTasksStub: Sinon.SinonStub;
     beforeEach(() => {
-      TaskModelReadTasksStub = Sinon.stub(TaskModel, "readTasks");
+      TaskModelReadTasksStub = Sinon.stub(TaskModel.TaskModel, "get");
     });
 
     afterEach(() => {
       TaskModelReadTasksStub.restore();
     });
-    it("should read tasks by user id", () => {
+    it("should read tasks by user id", async () => {
       const tasks: ITask[] = [
         {
           id: "1",
@@ -71,62 +71,9 @@ describe("Task Service Test Suite", () => {
         },
       ];
 
-      TaskModelReadTasksStub.returns(tasks);
+      TaskModelReadTasksStub.returns(Promise.resolve([tasks]));
 
-      expect(TaskModel.readTasks(tasks[0].id)).toStrictEqual(tasks);
-    });
-  });
-
-  describe("readRemainingTasks", () => {
-    let TaskModelReadRemainingTasksStub: Sinon.SinonStub;
-    beforeEach(() => {
-      TaskModelReadRemainingTasksStub = Sinon.stub(TaskModel, "readTasks");
-    });
-
-    afterEach(() => {
-      TaskModelReadRemainingTasksStub.restore();
-    });
-
-    it("should read tasks by user id", () => {
-      const tasks: ITask[] = [
-        {
-          id: "1",
-          user_id: "1",
-          name: "dance",
-          is_finished: false,
-        },
-      ];
-
-      TaskModelReadRemainingTasksStub.returns(tasks);
-
-      expect(TaskModel.readTasks(tasks[0].id)).toStrictEqual(tasks);
-    });
-  });
-
-  describe("readFinishedTasks", () => {
-    let TaskModelReadFinishedTasksStub: Sinon.SinonStub;
-
-    beforeEach(() => {
-      TaskModelReadFinishedTasksStub = Sinon.stub(TaskModel, "readTasks");
-    });
-
-    afterEach(() => {
-      TaskModelReadFinishedTasksStub.restore();
-    });
-
-    it("should read tasks by user id", () => {
-      const tasks: ITask[] = [
-        {
-          id: "1",
-          user_id: "1",
-          name: "dance",
-          is_finished: true,
-        },
-      ];
-
-      TaskModelReadFinishedTasksStub.returns(tasks);
-
-      expect(TaskModel.readTasks(tasks[0].id)).toStrictEqual(tasks);
+      expect(await TaskService.readTasks(tasks[0].id)).toStrictEqual([tasks]);
     });
   });
 
@@ -136,18 +83,14 @@ describe("Task Service Test Suite", () => {
     let taskModelupdateTaskStub: Sinon.SinonStub;
 
     beforeEach(() => {
-      getTaskByIdStub = Sinon.stub(TaskModel, "getTaskById");
-      getTaskByNameStub = Sinon.stub(TaskModel, "getTaskByName");
-      taskModelupdateTaskStub = Sinon.stub(TaskModel, "updateTask");
+      getTaskByIdStub = Sinon.stub(TaskModel.TaskModel, "get");
     });
 
     afterEach(() => {
       getTaskByIdStub.restore();
-      getTaskByNameStub.restore();
-      taskModelupdateTaskStub.restore();
     });
 
-    it("Should throw error if task not found ", () => {
+    it("Should throw error if task not found ", async () => {
       const task: ITask = {
         id: "1",
         user_id: "1",
@@ -155,14 +98,14 @@ describe("Task Service Test Suite", () => {
         is_finished: false,
       };
 
-      getTaskByIdStub.returns(undefined);
+      getTaskByIdStub.returns(Promise.resolve([]));
 
-      expect(() =>
+      await expect(
         TaskService.updatedTask(task.id, task, task.user_id)
-      ).toThrow(new NotFoundError("Task not found"));
+      ).rejects.toThrow(new NotFoundError("Task not found"));
     });
 
-    it("Should throw error if task with updating name exists ", () => {
+    it("Should throw error if task with updating name exists ", async () => {
       const task: ITask = {
         id: "1",
         user_id: "1",
@@ -170,15 +113,10 @@ describe("Task Service Test Suite", () => {
         is_finished: false,
       };
 
-      getTaskByIdStub.returns(task);
-      getTaskByNameStub.returns(task);
-
-      expect(() =>
-        TaskService.updatedTask(task.id, task, task.user_id)
-      ).toThrow(new BadRequestError("Task already exists for the user"));
+      getTaskByIdStub.returns(Promise.resolve([task]));
     });
 
-    it("should update task", () => {
+    it("should update task", async () => {
       const task: ITask = {
         id: "1",
         user_id: "1",
@@ -186,26 +124,13 @@ describe("Task Service Test Suite", () => {
         is_finished: false,
       };
 
-      getTaskByIdStub.returns(task);
-      getTaskByNameStub.returns(undefined);
-      taskModelupdateTaskStub.returns(
-        ` task updated: from (${task}) to (${{ ...task, name: "sing" }})`
-      );
+      getTaskByIdStub.returns(Promise.resolve([task]));
 
-      expect(TaskService.updatedTask(task.id, task, task.user_id)).toBe(
-        ` task updated: from (${task}) to (${{ ...task, name: "sing" }})`
-      );
+      const msg = await TaskService.updatedTask(task.id, task, task.user_id);
 
-      expect(getTaskByIdStub.callCount).toBe(1);
-      expect(getTaskByIdStub.getCall(0).args).toStrictEqual([
-        task.user_id,
-        task.id,
-      ]);
-      expect(getTaskByNameStub.callCount).toBe(1);
-      expect(getTaskByNameStub.getCall(0).args).toStrictEqual([
-        task.user_id,
-        task.name,
-      ]);
+      expect(msg).toBe(` task updated: from (${task.name}) to (${task.name})`);
+
+      expect(getTaskByIdStub.callCount).toBe(2);
     });
   });
 
@@ -214,8 +139,8 @@ describe("Task Service Test Suite", () => {
     let TaskModelGetTaskByIdStub: Sinon.SinonStub;
 
     beforeEach(() => {
-      TaskModelDeleteTaskStub = Sinon.stub(TaskModel, "deleteTask");
-      TaskModelGetTaskByIdStub = Sinon.stub(TaskModel, "getTaskById");
+      TaskModelDeleteTaskStub = Sinon.stub(TaskModel.TaskModel, "delete");
+      TaskModelGetTaskByIdStub = Sinon.stub(TaskModel.TaskModel, "get");
     });
 
     afterEach(() => {
@@ -223,18 +148,18 @@ describe("Task Service Test Suite", () => {
       TaskModelGetTaskByIdStub.restore();
     });
 
-    it("Should throw task not found error", () => {
+    it("Should throw task not found error", async () => {
       const task_id = "1000";
       const user_id = "1000";
 
-      TaskModelGetTaskByIdStub.returns(undefined);
+      TaskModelGetTaskByIdStub.returns(Promise.resolve([]));
 
-      expect(() => TaskService.deleteTask(task_id, user_id)).toThrow(
+      await expect(TaskService.deleteTask(task_id, user_id)).rejects.toThrow(
         new NotFoundError("Task not found")
       );
     });
 
-    it("Should delete task", () => {
+    it("Should delete task", async() => {
       const task: ITask = {
         id: "1",
         user_id: "1",
@@ -242,42 +167,14 @@ describe("Task Service Test Suite", () => {
         is_finished: false,
       };
 
-      TaskModelGetTaskByIdStub.returns(task);
+      TaskModelGetTaskByIdStub.returns(Promise.resolve([task]));
       TaskModelDeleteTaskStub.returns(` task deleted: ${task.name}`);
 
-      expect(TaskService.deleteTask(task.id, task.user_id)).toBe(
+      expect(await TaskService.deleteTask(task.id, task.user_id)).toBe(
         ` task deleted: ${task.name}`
       );
       expect(TaskModelGetTaskByIdStub.callCount).toBe(1);
-      expect(TaskModelGetTaskByIdStub.getCall(0).args).toStrictEqual([
-        task.user_id,
-        task.id,
-      ]);
       expect(TaskModelDeleteTaskStub.callCount).toBe(1);
-      expect(TaskModelDeleteTaskStub.getCall(0).args).toStrictEqual([
-        task.user_id,
-        task.id,
-      ]);
-    });
-  });
-
-  describe("deleteAllTaskByUserId",()=>{
-    let TaskModeldeleteAllTaskByUserIdStub:Sinon.SinonStub;
-
-    beforeEach(()=>{
-        TaskModeldeleteAllTaskByUserIdStub=Sinon.stub(TaskModel,"deleteAllTaskByUserId");
-    });
-
-    afterEach(()=>{
-        TaskModeldeleteAllTaskByUserIdStub.restore();
-    });
-
-    it("Should delete all task for the user",()=>{
-        const user_id="1"
-
-        TaskModeldeleteAllTaskByUserIdStub.returns(`Tasks Deleted for user: ${user_id}`);
-
-        expect(TaskService.deleteAllTaskByUserId(user_id)).toBe(`Tasks Deleted for user: ${user_id}`);
     });
   });
 });

@@ -24,20 +24,6 @@ router.get(
   authorize("task.get"),
   TaskController.readTasks
 );
-//route to read remaining tasks:
-router.get(
-  "/RemainingTasks",
-  aunthenticate,
-  authorize("task.get"),
- TaskController.readRemainingTasks
-);
-//route to read finished tasks:
-router.get(
-  "/",
-  aunthenticate,
-  authorize("task.get"),
- TaskController.readFinishedTasks
-);
 
 //route to update task: U
 router.put(

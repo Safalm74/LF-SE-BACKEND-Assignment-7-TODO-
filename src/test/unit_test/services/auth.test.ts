@@ -42,7 +42,7 @@ describe("Auth Service Test Suite", () => {
         password: "password",
       };
 
-      UserServiceGetUserByEmailStub.returns(undefined);
+      UserServiceGetUserByEmailStub.returns(Promise.resolve([]));
 
       await expect(() =>
         AuthService.login(testLoginCredentials)
@@ -73,10 +73,10 @@ describe("Auth Service Test Suite", () => {
       };
 
       bcryptCompareStub.resolves(true);
-      UserServiceGetUserByEmailStub.returns({
+      UserServiceGetUserByEmailStub.resolves([{
         ...testLoginCredentials,
-        password: "wrong Password",
-      });
+        password: "Password",
+      }]);
       JWTSignStub.resolves("<Token>");
 
       await expect(
