@@ -11,19 +11,15 @@ import knex, { Knex } from "knex";
 const logger = loggerWithNameSpace("User Service");
 
 //service function to return user by id
-export function getUserById(id: string) {
+export async function getUserById(id: string) {
   logger.info("Attempting to get user by id");
-  return UserModel.UserModel.get({ q: id, page: 1, size: 1 });
-
-  // const data = UserModel.getUserById("1");
-
-  // if (!data) {
-  //   logger.error("user not found");
-
-  //   throw new NotFoundError("user not found");
-  // }
-
-  // return data;
+  
+  const existingUser=await UserModel.UserModel.get({ q: id, page: 1, size: 1 });
+  
+  if (existingUser.length ===0){
+    throw (new NotFoundError("User not found")) 
+  }
+  return existingUser;
 }
 
 //service function to return users

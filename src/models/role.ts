@@ -15,7 +15,3 @@ export class RoleModel extends BaseModel {
     return query;
   }
 }
-// const posts = await db('posts')
-//   .join('users', 'users.id', 'posts.user_id')
-//   .select('posts.id', 'users.username', 'posts.contents')
-//   .where({user_id: id})

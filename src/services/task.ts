@@ -29,18 +29,19 @@ export async function createTask(task: ITask, user_id: string) {
 export function readTasks(user_id: string) {
   return TaskHandlerModel.TaskModel.get(user_id);
 }
-//service to handle read task
-export function readRemainingTasks(user_id: string) {
-  const readData = TaskHandlerModel.readRemainingTasks(user_id);
 
-  return readData;
-}
 //service to handle read task
-export function readFinishedTasks(user_id: string) {
-  const readData = TaskHandlerModel.readFinishedTasks(user_id);
+// export function readRemainingTasks(user_id: string) {
+//   const readData = TaskHandlerModel.readRemainingTasks(user_id);
 
-  return readData;
-}
+//   return readData;
+// }
+// //service to handle read task
+// export function readFinishedTasks(user_id: string) {
+//   const readData = TaskHandlerModel.readFinishedTasks(user_id);
+
+//   return readData;
+// }
 
 //service to handle update task
 export async function updatedTask(
