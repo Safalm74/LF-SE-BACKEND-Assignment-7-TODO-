@@ -13,11 +13,15 @@ const logger = loggerWithNameSpace("User Service");
 //service function to return user by id
 export async function getUserById(id: string) {
   logger.info("Attempting to get user by id");
-  
-  const existingUser=await UserModel.UserModel.get({ q: id, page: 1, size: 1 });
-  
-  if (existingUser.length ===0){
-    throw (new NotFoundError("User not found")) 
+
+  const existingUser = await UserModel.UserModel.get({
+    q: id,
+    page: 1,
+    size: 1,
+  });
+
+  if (existingUser.length === 0) {
+    throw new NotFoundError("User not found");
   }
   return existingUser;
 }
@@ -34,7 +38,7 @@ export function getUserByEmail(email: string) {
 }
 
 //service function to create new user
-export async function createUser(user: IUser) {
+export async function createUser(user: IUser, createdById: string) {
   //async for using hash of bcrypt
   logger.info("Attempting to add user");
 
@@ -57,17 +61,21 @@ export async function createUser(user: IUser) {
   };
 
   //creating new user
-  return UserModel.UserModel.create(newUser);
+  return UserModel.UserModel.create(newUser,createdById);
 }
 
-export async function getUserPermisions(user_id:string){
-  const existingUser=await UserModel.UserModel.get({ q: user_id, page: 1, size: 1 });
-  
-  if (existingUser.length ===0){
-    throw (new NotFoundError("User not found")) 
+export async function getUserPermisions(user_id: string) {
+  const existingUser = await UserModel.UserModel.get({
+    q: user_id,
+    page: 1,
+    size: 1,
+  });
+
+  if (existingUser.length === 0) {
+    throw new NotFoundError("User not found");
   }
 
-  return ;
+  return;
 }
 
 //service to handle update user

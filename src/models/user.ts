@@ -2,12 +2,13 @@ import { IGetUserQuery, IUser } from "../interface/user";
 import BaseModel from "./base";
 
 export class UserModel extends BaseModel{
-  static async create(user:IUser){
+  static async create(user:IUser,createdById:string){
     const userToCreate={
       name:user.name,
       email:user.email,
       password:user.password,
-      role_id:user.role_id
+      role_id:user.role_id,
+      created_by:createdById
     }
     await this.queryBuilder().insert(userToCreate).table('users')
     return user;

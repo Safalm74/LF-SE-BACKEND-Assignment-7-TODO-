@@ -1,7 +1,8 @@
-import { Request, Response, NextFunction } from "express";
+import { Response, NextFunction } from "express";
 import * as UserService from "../services/user";
 import HttpStatusCode from "http-status-codes";
 import loggerWithNameSpace from "../utils/logger";
+import { Request } from "../interface/auth";
 
 const logger = loggerWithNameSpace("User Controller");
 
@@ -15,7 +16,7 @@ export async function createUser(
   try {
     const { body } = req; //getting new user data from request body
 
-    const req_user = await UserService.createUser(body);
+    const req_user = await UserService.createUser(body,req.user!.id);
 
     res.status(HttpStatusCode.CREATED).json(req_user);
   } catch (error) {

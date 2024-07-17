@@ -6,6 +6,7 @@ export class TaskModel extends BaseModel {
       name: task.name,
       is_finished: false,
       user_id: user_id,
+      created_by:user_id
     };
     await this.queryBuilder().insert(taskToCreate).table("tasks");
     return task;
