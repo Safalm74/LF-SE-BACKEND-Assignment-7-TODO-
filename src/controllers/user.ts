@@ -64,11 +64,14 @@ export async function updatedUser(
   try {
     const id = `${req.params.id}`;
     const { body } = req;
+    const msg=await UserService.updateUser(id, body)
 
     res.status(HttpStatusCode.OK).json({
-      msg: await UserService.updateUser(id, body),
+      msg: msg,
     });
   } catch (error) {
+console.log(error);
+
     next(error);
   }
 }
@@ -84,8 +87,10 @@ export async function deleteUser(
   try {
     const id = `${req.params.id}`;
 
+    const msg=(await UserService.deleteUser(id));
+
     res.status(HttpStatusCode.NO_CONTENT).json({
-      msg: await UserService.deleteUser(id),
+      msg: msg,
     });
   } catch (error) {
     next(error);

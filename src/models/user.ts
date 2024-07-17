@@ -42,14 +42,17 @@ export class UserModel extends BaseModel{
     }
 
     const query =this.queryBuilder().update(userToUpdate).table("users").where({id});
-
-    console.log(await query)
  
     await query;
+
+    return;
   }
 
-  static delete(UserToDeleteId:string){
+  static async delete(UserToDeleteId:string){
     const query=this.queryBuilder().delete().table("users").where({id:UserToDeleteId});
-    return query;
+
+    await query;
+    
+    return;
   }
 };

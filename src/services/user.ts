@@ -61,21 +61,9 @@ export async function createUser(user: IUser, createdById: string) {
   };
 
   //creating new user
-  return UserModel.UserModel.create(newUser,createdById);
-}
+  UserModel.UserModel.create(newUser,createdById);
 
-export async function getUserPermisions(user_id: string) {
-  const existingUser = await UserModel.UserModel.get({
-    q: user_id,
-    page: 1,
-    size: 1,
-  });
-
-  if (existingUser.length === 0) {
-    throw new NotFoundError("User not found");
-  }
-
-  return;
+  return {msg: "User Created"}
 }
 
 //service to handle update user
@@ -86,7 +74,7 @@ export async function updateUser(id: string, updateUser: IUser) {
   logger.info("Attempting to get user by id");
 
   const data = await UserModel.UserModel.get({ q: id, page: 1, size: 1 });
-  const dataByEmail = await UserModel.UserModel.getUserByEmail(
+  let dataByEmail = await UserModel.UserModel.getUserByEmail(
     updateUser.email
   );
 
@@ -106,13 +94,19 @@ export async function updateUser(id: string, updateUser: IUser) {
     throw new BadRequestError("Email is already used");
   }
 
+  dataByEmail = await UserModel.UserModel.getUserByEmail(
+    data[0].email
+  );
+
   //hashing password
   if (!(await bcrypt.compare(dataByEmail[0].password, updateUser.password))) {
     const password = await bcrypt.hash(updateUser.password, 10);
     updateUser = { ...updateUser, password: password };
   }
 
-  return UserModel.UserModel.update(id, updateUser);
+  UserModel.UserModel.update(id, updateUser);
+
+  return {msg: `User Updated: ${id}`};
 }
 
 //service to handle delete user
@@ -130,5 +124,7 @@ export async function deleteUser(UserId: string) {
   //deleting tasks of the user
   deleteAllTaskByUserId(UserId);
 
-  return UserModel.UserModel.delete(UserId);
+  UserModel.UserModel.delete(UserId);
+
+  return {msg: `User Deleted: ${UserId}`};
 }
