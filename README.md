@@ -1,4 +1,8 @@
 # TODO 
+This is backend program that allows to operate CRUD operations on user and task for todo.
+Super User have permissiom for CRUD operations on user and task. User has permission for CRUD operations on task related to them.
+#### SuperUserEmail: admin@admin.com
+#### SuperUserPassword: admin
 ## Routes
 #### Routes for user 
 
