@@ -16,17 +16,7 @@ describe("Auth Route Integration Test Suite", () => {
     name: "admin",
     email: "admin@admin.com",
     password: "$2b$10$8bnVy6XkAPndk9.XZEv2qOHHpiqLKfQJVVMFkkrb0Ef96hj09qjli",
-    permissions: [
-      "user.post",
-      "user.get",
-      "user.put",
-      "user.delete",
-      "task.post",
-      "task.put",
-      "task.delete",
-      "task.get",
-    ],
-    role: "super_user",
+    role_id: 1,
   };
 
   const app = express();
@@ -50,10 +40,11 @@ describe("Auth Route Integration Test Suite", () => {
       .post("/auth/login")
       .send({
         email: "Unknownadmin@admin.com",
-        password: "adminWrongPassword",
+        password: "admin",
       })
-      expect(response.status).toEqual(HttpStatusCode.NOT_FOUND);
-      expect(response.body.message).toBe("user not found");
+
+      expect(response.status).toEqual(HttpStatusCode.UNAUTHORIZED);
+      expect(response.body.message).toBe("Invalid email or password");
     });
 
     it("Should throw error for incorrect password", async () => {

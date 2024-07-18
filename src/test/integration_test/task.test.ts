@@ -12,7 +12,7 @@ import { ITask } from "../../interface/task";
 
 describe("Task Route Integration Test Suite", () => {
   const task: ITask = {
-    id: "1",
+    id: "6",
     user_id: "1",
     name: "read book",
     is_finished: false,
@@ -50,8 +50,13 @@ describe("Task Route Integration Test Suite", () => {
         .send(task);
     });
 
-    afterEach(() => {
+    afterEach(async () => {
       superUserAccessToken = "";
+
+      await request(app)
+        .delete(`/task/${task.id}`)
+        .set("Authorization", "Bearer " + superUserAccessToken)
+        .send(task);
     });
 
     it("Should throw error if task already exists", async () => {
@@ -66,11 +71,16 @@ describe("Task Route Integration Test Suite", () => {
 
     it("Should create task and return status code 201", async () => {
       const response = await request(app)
-        .post("/task")
+        .post("/task/")
         .set("Authorization", "Bearer " + superUserAccessToken)
         .send({
-          name: "sing",
+          name: "TestTaskAdd",
         });
+
+      await request(app)
+        .delete(`/task/7`)
+        .set("Authorization", "Bearer " + superUserAccessToken)
+        .send(task);
 
       expect(response.status).toStrictEqual(HttpStatusCode.CREATED);
     });
@@ -138,21 +148,20 @@ describe("Task Route Integration Test Suite", () => {
       expect(response.body.message).toBe("Task not found");
     });
 
-
     it("should update task", async () => {
-      const user_id = 1; 
-      const task_id=1;
+      const user_id = 1;
+      const task_id = 1;
       const taskDetailToUpdate = {
         ...task,
         name: "dance",
-        user_id:user_id,
-        task_id:task_id
+        user_id: user_id,
+        task_id: task_id,
       };
 
       const response = await request(app)
         .put(`/task/${task_id}`)
         .set("Authorization", "Bearer " + superUserAccessToken)
-        .send(taskDetailToUpdate );
+        .send(taskDetailToUpdate);
 
       expect(response.status).toStrictEqual(HttpStatusCode.OK);
     });
@@ -195,7 +204,14 @@ describe("Task Route Integration Test Suite", () => {
     });
 
     it("should delete task", async () => {
-      const task_id = "1";
+      const task_id = "6";
+
+      await request(app)
+        .post("/task/")
+        .set("Authorization", "Bearer " + superUserAccessToken)
+        .send({
+          name: "TestTaskAdd",
+        });
 
       const response = await request(app)
         .delete(`/task/${task_id}`)
@@ -203,7 +219,7 @@ describe("Task Route Integration Test Suite", () => {
         .send({
           name: "read book",
           user_id: task_id,
-        });;
+        });
 
       expect(response.status).toStrictEqual(HttpStatusCode.NO_CONTENT);
     });

@@ -16,32 +16,21 @@ describe("User Route Integration Test Suite", () => {
     name: "test",
     email: "test@test.com",
     password: "TestPassword123!",
-    role: "user",
-    permissions: [],
+    role_id: 2,
   };
   const super_user: IUser = {
     id: "1",
     name: "admin",
     email: "admin@admin.com",
     password: "$2b$10$8bnVy6XkAPndk9.XZEv2qOHHpiqLKfQJVVMFkkrb0Ef96hj09qjli",
-    permissions: [
-      "user.post",
-      "user.get",
-      "user.put",
-      "user.delete",
-      "task.post",
-      "task.put",
-      "task.delete",
-      "task.get",
-    ],
-    role: "super_user",
+    role_id: 1,
   };
 
   const app = express();
 
   //Middleware to add security level
   app.use(helmet());
-  
+
   app.use(express.json());
 
   app.use(router);
@@ -84,6 +73,10 @@ describe("User Route Integration Test Suite", () => {
         .set("Authorization", "Bearer " + superUserAccessToken)
         .send(user);
 
+      await request(app)
+        .delete(`/user/7`)
+        .set("Authorization", "Bearer " + superUserAccessToken);
+
       expect(response.status).toStrictEqual(HttpStatusCode.CREATED);
     });
   });
@@ -111,7 +104,7 @@ describe("User Route Integration Test Suite", () => {
         .set("Authorization", "Bearer " + superUserAccessToken);
 
       expect(response.status).toStrictEqual(HttpStatusCode.NOT_FOUND);
-      expect(response.body.message).toBe("user not found");
+      expect(response.body.message).toBe("User not found");
     });
 
     it("should return user and respond status code 200", async () => {
@@ -134,14 +127,9 @@ describe("User Route Integration Test Suite", () => {
           password: "admin",
         })
       ).body.accessToken;
-
-      await request(app) //creating user
-        .post("/user")
-        .set("Authorization", "Bearer " + superUserAccessToken)
-        .send(user);
     });
 
-    afterEach(() => {
+    afterEach(async() => {
       superUserAccessToken = "";
     });
 
@@ -190,7 +178,9 @@ describe("User Route Integration Test Suite", () => {
         .put(`/user/${user_id}`)
         .set("Authorization", "Bearer " + superUserAccessToken)
         .send(userDetailToUpdate);
+      
 
+        
       expect(response.status).toStrictEqual(HttpStatusCode.OK);
     });
   });
@@ -212,8 +202,13 @@ describe("User Route Integration Test Suite", () => {
         .send(user);
     });
 
-    afterEach(() => {
+    afterEach(async () => {
       superUserAccessToken = "";
+
+      await request(app) //deleting user
+        .delete("/user/7")
+        .set("Authorization", "Bearer " + superUserAccessToken)
+        .send(user);
     });
 
     it("should throw error when user is not in the system and status code 404", async () => {
@@ -227,7 +222,7 @@ describe("User Route Integration Test Suite", () => {
     });
 
     it("should delete user", async () => {
-      const user_id = "2"; //new user has id 2
+      const user_id = "8"; //new user has id 8 (id will not reset on deleting so id increases)
 
       const response = await request(app)
         .delete(`/user/${user_id}`)
